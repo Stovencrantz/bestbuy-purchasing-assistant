@@ -61,8 +61,8 @@ try:
             )
                 time.sleep(2)
                 print("COngrats! You are logged in")
-                # driver.get('https://www.bestbuy.com/site/nvidia-geforce-rtx-3070-8gb-gddr6-pci-express-4-0-graphics-card-dark-platinum-and-black/6429442.p?skuId=6429442');
-                driver.get('https://www.bestbuy.com/site/logitech-z150-2-0-multimedia-speakers-2-piece-black/5326434.p?skuId=5326434');
+                driver.get('https://www.bestbuy.com/site/nvidia-geforce-rtx-3070-8gb-gddr6-pci-express-4-0-graphics-card-dark-platinum-and-black/6429442.p?skuId=6429442');
+                # driver.get('https://www.bestbuy.com/site/logitech-z150-2-0-multimedia-speakers-2-piece-black/5326434.p?skuId=5326434');
 
 
                 time.sleep(2)
@@ -70,35 +70,51 @@ try:
                 # Try/except to certify that the item is in stock, and if so to add it to the cart
                 try:
                     addToCartButton = WebDriverWait(driver, 10).until(
-                    # EC.presence_of_element_located((By.XPATH, "//button[contains(@class,'add-to-cart-button') and contains(@class, 'btn-leading-ficon')]"))
-                    # EC.presence_of_element_located((By.XPATH, "//button[contains(@class, 'add-to-cart-button')]"))
                     EC.presence_of_element_located((By.CLASS_NAME, 'add-to-cart-button'))
                 )
+                # set addToCartButtonStatus to hold initial boolean to enter our while loop. If it is false, we will loop, otherwise we pass the loop
+                    addToCartButtonStatus = addToCartButton.is_enabled()
 
-                    # If the add to cart button is present, meaning the item is IN STOCK, click the button and proceed to check out
-                    if (addToCartButton.is_enabled()): 
-                        addToCartButton.click()                
-                        print("Looks like the item is in stock, We have added your item to the cart")
-                        # print("addToCartButton is enabled")
-                        time.sleep(2)                
+                    while(addToCartButtonStatus == False):
+                        # If the add to cart button is present, meaning the item is IN STOCK, click the button and proceed to check out
+                        time.sleep(2)
+                        driver.get('https://www.bestbuy.com/site/nvidia-geforce-rtx-3070-8gb-gddr6-pci-express-4-0-graphics-card-dark-platinum-and-black/6429442.p?skuId=6429442');
+                        # driver.get('https://www.bestbuy.com/site/logitech-z150-2-0-multimedia-speakers-2-piece-black/5326434.p?skuId=5326434'); 
                         
+                        # locate the addToCart Button after the page refreshed to check if button status updated
                         try:
-                            goToCartButton = WebDriverWait(driver, 10).until(
-                                EC.presence_of_element_located((By.CLASS_NAME, "go-to-cart-button"))
+                            addToCartButton = WebDriverWait(driver, 10).until(
+                            EC.presence_of_element_located((By.CLASS_NAME, 'add-to-cart-button'))
                             )
-                            goToCartButton.click()                
-                            print("Navigating to our cart")
-                            time.sleep(2)
-                            
+                            # If the button is now enabled and the item can be checked out, we will break from this loop 
+                            if (addToCartButton.is_enabled()): 
+                                print("Looks like the item is now in stock, We have added your item to the cart")
+                                # print("addToCartButton is enabled")
+                                print(addToCartButton.is_enabled())
+                                break 
+            
+
+                            # If the add to cart button is NOT present, meaning the item is OUT OF STOCK, refresh the page
+                            # This else is unnecessary, its just being used to show we are continuously looping through in the console
+                            else:
+                                # print(addToCartButton.is_enabled())
+                                # print("addToCartButton is disabled")
+                                print("Looks like our Item is out of stock, check back later!")
+                        
                         except Exception as e: print(e)
 
-                    # If the add to cart button is NOT present, meaning the item is OUT OF STOCK, refresh the page
-                    else:
-                        # print("addToCartButton is disabled")
-                        print("Looks like our Item is out of stock, check back later!")
-                        # driver.get('https://www.bestbuy.com/site/nvidia-geforce-rtx-3070-8gb-gddr6-pci-express-4-0-graphics-card-dark-platinum-and-black/6429442.p?skuId=6429442');
-                        driver.get('https://www.bestbuy.com/site/logitech-z150-2-0-multimedia-speakers-2-piece-black/5326434.p?skuId=5326434');
 
+                    # Once an items add-to-cart button becomes active, we exit our loop and add the item to our cart
+                    addToCartButton.click()                
+                    try:
+                        goToCartButton = WebDriverWait(driver, 10).until(
+                            EC.presence_of_element_located((By.CLASS_NAME, "go-to-cart-button"))
+                        )
+                        goToCartButton.click()                
+                        print("Navigating to our cart")
+                        time.sleep(2)
+                        
+                    except Exception as e: print(e)
 
                 except Exception as e: print(e)
 

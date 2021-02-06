@@ -61,8 +61,8 @@ try:
             )
                 time.sleep(2)
                 print("COngrats! You are logged in")
-                driver.get('https://www.bestbuy.com/site/nvidia-geforce-rtx-3070-8gb-gddr6-pci-express-4-0-graphics-card-dark-platinum-and-black/6429442.p?skuId=6429442');
-                # driver.get('https://www.bestbuy.com/site/logitech-z150-2-0-multimedia-speakers-2-piece-black/5326434.p?skuId=5326434');
+                # driver.get('https://www.bestbuy.com/site/nvidia-geforce-rtx-3070-8gb-gddr6-pci-express-4-0-graphics-card-dark-platinum-and-black/6429442.p?skuId=6429442');
+                driver.get('https://www.bestbuy.com/site/logitech-z150-2-0-multimedia-speakers-2-piece-black/5326434.p?skuId=5326434');
 
 
                 time.sleep(2)
@@ -78,8 +78,8 @@ try:
                     while(addToCartButtonStatus == False):
                         # If the add to cart button is present, meaning the item is IN STOCK, click the button and proceed to check out
                         time.sleep(2)
-                        driver.get('https://www.bestbuy.com/site/nvidia-geforce-rtx-3070-8gb-gddr6-pci-express-4-0-graphics-card-dark-platinum-and-black/6429442.p?skuId=6429442');
-                        # driver.get('https://www.bestbuy.com/site/logitech-z150-2-0-multimedia-speakers-2-piece-black/5326434.p?skuId=5326434'); 
+                        # driver.get('https://www.bestbuy.com/site/nvidia-geforce-rtx-3070-8gb-gddr6-pci-express-4-0-graphics-card-dark-platinum-and-black/6429442.p?skuId=6429442');
+                        driver.get('https://www.bestbuy.com/site/logitech-z150-2-0-multimedia-speakers-2-piece-black/5326434.p?skuId=5326434'); 
                         
                         # locate the addToCart Button after the page refreshed to check if button status updated
                         try:
@@ -112,8 +112,33 @@ try:
                         )
                         goToCartButton.click()                
                         print("Navigating to our cart")
-                        time.sleep(2)
-                        
+
+                        #Ensure that the radio button for shipping to your address is clicked before purchase
+                        # shipping radio button ID seems to change at a particular time, generate way to find this value regardless if it changes daily or not
+                        try:
+                            radioContainer = WebDriverWait(driver, 10).until(
+                                EC.presence_of_element_located((By.CLASS_NAME, "availability__list"))
+                                # EC.presence_of_element_located((By.ID, "fulfillment-shipping-qss2wkkutp0r-4sdob3sngievq"))
+                            )
+                            # radioContainer.click()
+                            print(radioContainer)
+
+                            radioList = radioContainer.find_elements_by_class_name('c-radio-brand')
+                            print("Radio List: ")
+                            print(radioList)
+
+                            # Loop through all of the radio buttons on the page and check to see which one have an id that includes fulfillment-shipping within its unique id, as only the radio button for shipping to your address has this unique phrase in it
+                            for radio in radioList:
+                                radioBtn = radio.find_element_by_xpath("*")
+                                radioBtnIdList = radioBtn.get_attribute("id").split('-')
+                                shippingBtnCheck = radioBtnIdList[0] + '-' + radioBtnIdList[1]
+                                if shippingBtnCheck == 'fulfillment-shipping':
+                                    radioBtn.click()
+                                    break
+                            time.sleep(20)
+
+                        except Exception as e: print(e)
+
                     except Exception as e: print(e)
 
                 except Exception as e: print(e)
@@ -130,10 +155,6 @@ try:
 except Exception as e: print(e)
 # except:
 #     print("an exception occured trying to click Account")
-
-
-
-
 
 
 

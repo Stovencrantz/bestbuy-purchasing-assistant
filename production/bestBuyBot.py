@@ -8,14 +8,24 @@ import time
 # driver.get('https://www.bestbuy.com/site/nvidia-geforce-rtx-3070-8gb-gddr6-pci-express-4-0-graphics-card-dark-platinum-and-black/6429442.p?skuId=6429442');
 
 # Prompt the user for some information, before initializing the webDriver, this prevents python from bugging out when it tries to prompt the user for info and also laod the driver at the same time
+productURL = input("Please enter the link to your desired product: ")
+print("Enter your login info")
 username = input("Please enter your username: ")
 password = input("Please enter your password: ")
+print("Enter your shipping info")
+firstName = input("First Name: ")
+lastName = input("Last Name: ")
+address = input("Shipping Address: ")
+city = input("City: ")
+state = input("State (Ex. NY): ").upper()
+zipCode = input("ZIP Code: ")
 
 # try/except to pass ad
 PATH = 'C:\webdrivers\chromedriver_win32\chromedriver.exe'
 driver = webdriver.Chrome(PATH)
 driver.get('https://www.bestbuy.com/')
 
+# grabs the advertisement that pops up on initial page load,  and closes out of it
 try:
     advertisement = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, "widgets-view-email-modal-mount"))
@@ -24,13 +34,13 @@ try:
     advertClose.click()
     print("advertisement has been closed")
 
-# grabs first utility-navigation-list-item, which in our case is the account button
+    # grabs first utility-navigation-list-item, which in our case is the account button
     accountButton = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.CLASS_NAME, "utility-navigation-list-item"))
     )
     accountButton.click()
 
-        # Try/except to open account dropdown and click signIn button
+    # Try/except to open account dropdown and click signIn button
     try:
         # signInMenu = WebDriverWait(driver, 10).until(
         #     EC.presence_of_element_located((By.ID, "account-menu-container"))
@@ -59,13 +69,13 @@ try:
                 loggedIn = WebDriverWait(driver, 10).until(
                  EC.presence_of_element_located((By.CLASS_NAME, "logged_user_name"))
             )
-                time.sleep(2)
+                # time.sleep(2)
                 print("COngrats! You are logged in")
                 # driver.get('https://www.bestbuy.com/site/nvidia-geforce-rtx-3070-8gb-gddr6-pci-express-4-0-graphics-card-dark-platinum-and-black/6429442.p?skuId=6429442');
-                driver.get('https://www.bestbuy.com/site/logitech-z150-2-0-multimedia-speakers-2-piece-black/5326434.p?skuId=5326434');
+                driver.get(productURL);
 
 
-                time.sleep(2)
+                # time.sleep(2)
 
                 # Try/except to certify that the item is in stock, and if so to add it to the cart
                 try:
@@ -77,14 +87,14 @@ try:
 
                     while(addToCartButtonStatus == False):
                         # If the add to cart button is present, meaning the item is IN STOCK, click the button and proceed to check out
-                        time.sleep(2)
+                        # time.sleep(2)
                         # driver.get('https://www.bestbuy.com/site/nvidia-geforce-rtx-3070-8gb-gddr6-pci-express-4-0-graphics-card-dark-platinum-and-black/6429442.p?skuId=6429442');
-                        driver.get('https://www.bestbuy.com/site/logitech-z150-2-0-multimedia-speakers-2-piece-black/5326434.p?skuId=5326434'); 
+                        driver.get(productURL); 
                         
                         # locate the addToCart Button after the page refreshed to check if button status updated
                         try:
                             addToCartButton = WebDriverWait(driver, 10).until(
-                            EC.presence_of_element_located((By.CLASS_NAME, 'add-to-cart-button'))
+                                EC.presence_of_element_located((By.CLASS_NAME, 'add-to-cart-button'))
                             )
                             # If the button is now enabled and the item can be checked out, we will break from this loop 
                             if (addToCartButton.is_enabled()): 
@@ -101,7 +111,7 @@ try:
                                 # print("addToCartButton is disabled")
                                 print("Looks like our Item is out of stock, check back later!")
                         
-                        except Exception as e: print(e)
+                        except Exception as e: print("Could not locate the Add-to-cart button \n" + str(e))
 
 
                     # Once an items add-to-cart button becomes active, we exit our loop and add the item to our cart
@@ -113,51 +123,80 @@ try:
                         goToCartButton.click()                
                         print("Navigating to our cart")
 
-                        #Ensure that the radio button for shipping to your address is clicked before purchase
-                        # shipping radio button ID seems to change at a particular time, generate way to find this value regardless if it changes daily or not
+                        #Ensure that the radio button for shipping to your address is clicked before purchase, will click the button whether the availabilti__list container is in either location
                         try:
                             radioContainer = WebDriverWait(driver, 10).until(
                                 EC.presence_of_element_located((By.CLASS_NAME, "availability__list"))
-                                # EC.presence_of_element_located((By.ID, "fulfillment-shipping-qss2wkkutp0r-4sdob3sngievq"))
                             )
-                            # radioContainer.click()
-                            print(radioContainer)
+                            shippingBtn = radioContainer.find_element_by_xpath("//input[(@id='fulfillment-order-shipping') or contains(@id,'fulfillment-shipping')]")
+                            shippingBtn.click()
 
-                            radioList = radioContainer.find_elements_by_class_name('c-radio-brand')
-                            print("Radio List: ")
-                            print(radioList)
+                            checkoutBtn = driver.find_element_by_class_name("checkout-buttons__checkout").find_element_by_xpath("*")
+                            checkoutBtn.click()
+                            print('Navigating to checkout page')
 
-                            # Loop through all of the radio buttons on the page and check to see which one have an id that includes fulfillment-shipping within its unique id, as only the radio button for shipping to your address has this unique phrase in it
-                            for radio in radioList:
-                                radioBtn = radio.find_element_by_xpath("*")
-                                radioBtnIdList = radioBtn.get_attribute("id").split('-')
-                                shippingBtnCheck = radioBtnIdList[0] + '-' + radioBtnIdList[1]
-                                if shippingBtnCheck == 'fulfillment-shipping':
-                                    radioBtn.click()
-                                    break
-                            time.sleep(20)
+                            # Locate the shipping info form and fill in all of the field swith the users billing info that they entered
+                            try:
+                                shippingForm = WebDriverWait(driver, 10).until(
+                                EC.presence_of_element_located((By.CLASS_NAME, "streamlined__shipping--body"))
+                            )
+                                firstNameForm = shippingForm.find_element_by_id("consolidatedAddresses.ui_address_2.firstName")
+                                firstNameForm.send_keys(firstName)
 
-                        except Exception as e: print(e)
+                                lastNameForm = shippingForm.find_element_by_id("consolidatedAddresses.ui_address_2.lastName")
+                                lastNameForm.send_keys(lastName)
 
-                    except Exception as e: print(e)
+                                addressForm = shippingForm.find_element_by_id("consolidatedAddresses.ui_address_2.street")
+                                addressForm.send_keys(address)
 
-                except Exception as e: print(e)
+                                cityForm = shippingForm.find_element_by_id("consolidatedAddresses.ui_address_2.city")
+                                cityForm.send_keys(city)
 
-            except Exception as e: print(e)
-            # except:
-            #     print("Couldnt recognize logged user")
-        except Exception as e: print(e)
-        # except:
-        #     print("There was an exception trying to sign in")
-    except Exception as e: print(e)           
-    # except:
-    #     print("An exception occured trying to click Sign In")
-except Exception as e: print(e)
-# except:
-#     print("an exception occured trying to click Account")
+                                zipCodeForm = shippingForm.find_element_by_id("consolidatedAddresses.ui_address_2.zipcode")
+                                zipCodeForm.send_keys(zipCode)
+
+                                stateForm = shippingForm.find_element_by_id("consolidatedAddresses.ui_address_2.state")
+                                stateBtn = stateForm.find_element_by_css_selector("option[value="+state+"]") 
+                                stateBtn.click()
+                                # stateBtn.send_keys(Keys.RETURN)
+
+                                try:
+                                    paymentContinueField = WebDriverWait(driver, 10).until(
+                                    EC.presence_of_element_located((By.CSS_SELECTOR, "div[class='button--continue']"))
+                                )
+                                    paymentContinueBtn = paymentContinueField.find_element_by_xpath("*")
+                                    paymentContinueBtn.click()
+                                    # driver.execute_script("arguments[0].click();", paymentContinueBtn)
+
+                                    try: 
+                                        placeOrderBtn = WebDriverWait(driver, 10).until(
+                                        EC.presence_of_element_located((By.XPATH, "//button[contains(@data-track,'Place your Order - Contact Card')]"))
+                                    )
+                                        print(placeOrderBtn)
+
+                                    except Exception as e: print("Could not locate the finalize purchase button \n" + str(e))
+
+                                except Exception as e: print("Exception trying to find the continue to payment button \n" + str(e))
+
+                            except Exception as e: print("Could not identify the form for entering the users shipping info \n" + str(e))
+
+                        except Exception as e: print("Could not identify the radio button container for shipping to the users address \n" + str(e))
+
+                    except Exception as e: print("Could not locate the go-to-cart button \n" + str(e))
+
+                except Exception as e: print("There was an exception checking that the user was logged in \n" + str(e))
+            
+            except Exception as e: print("There was an exception getting the sign in form \n" + str(e))
+
+        except Exception as e: print("There was an exception trying to sign in button \n" + str(e))
+
+    except Exception as e: print("An exception occured trying to click Sign In dropdown menu \n" + str(e))           
+
+except Exception as e: print("an exception occured trying to access the advertisement \n" + str(e))
+
 
 
 
 time.sleep(5)
 
-driver.quit()
+# driver.quit()

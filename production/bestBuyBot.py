@@ -5,8 +5,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 
-# driver.get('https://www.bestbuy.com/site/nvidia-geforce-rtx-3070-8gb-gddr6-pci-express-4-0-graphics-card-dark-platinum-and-black/6429442.p?skuId=6429442');
-
 # Prompt the user for some information, before initializing the webDriver, this prevents python from bugging out when it tries to prompt the user for info and also laod the driver at the same time
 productURL = input("Please enter the link to your desired product: ")
 print("Enter your login info")
@@ -42,13 +40,9 @@ try:
 
     # Try/except to open account dropdown and click signIn button
     try:
-        # signInMenu = WebDriverWait(driver, 10).until(
-        #     EC.presence_of_element_located((By.ID, "account-menu-container"))
-        # )
         signInButton = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "lam-signIn__button"))
         )
-        # signInButton = signInMenu.find_element_by_class_name("lam-signIn__button")
         signInButton.click()
         # Try/except to fill out signin info and click SignIn button
         try: 
@@ -69,15 +63,10 @@ try:
                 loggedIn = WebDriverWait(driver, 10).until(
                  EC.presence_of_element_located((By.CLASS_NAME, "logged_user_name"))
             )
-                # time.sleep(2)
                 print("COngrats! You are logged in")
-                # driver.get('https://www.bestbuy.com/site/nvidia-geforce-rtx-3070-8gb-gddr6-pci-express-4-0-graphics-card-dark-platinum-and-black/6429442.p?skuId=6429442');
                 driver.get(productURL);
 
-
-                # time.sleep(2)
-
-                # Try/except to certify that the item is in stock, and if so to add it to the cart
+                # Try/except to certify that the item is in stock. if so to add it to the cart, otherwise refresh to page every few moments until the item is in stock and the button becomes active, then click
                 try:
                     addToCartButton = WebDriverWait(driver, 10).until(
                     EC.presence_of_element_located((By.CLASS_NAME, 'add-to-cart-button'))
@@ -87,8 +76,6 @@ try:
 
                     while(addToCartButtonStatus == False):
                         # If the add to cart button is present, meaning the item is IN STOCK, click the button and proceed to check out
-                        # time.sleep(2)
-                        # driver.get('https://www.bestbuy.com/site/nvidia-geforce-rtx-3070-8gb-gddr6-pci-express-4-0-graphics-card-dark-platinum-and-black/6429442.p?skuId=6429442');
                         driver.get(productURL); 
                         
                         # locate the addToCart Button after the page refreshed to check if button status updated
@@ -99,16 +86,10 @@ try:
                             # If the button is now enabled and the item can be checked out, we will break from this loop 
                             if (addToCartButton.is_enabled()): 
                                 print("Looks like the item is now in stock, We have added your item to the cart")
-                                # print("addToCartButton is enabled")
                                 print(addToCartButton.is_enabled())
                                 break 
             
-
-                            # If the add to cart button is NOT present, meaning the item is OUT OF STOCK, refresh the page
-                            # This else is unnecessary, its just being used to show we are continuously looping through in the console
                             else:
-                                # print(addToCartButton.is_enabled())
-                                # print("addToCartButton is disabled")
                                 print("Looks like our Item is out of stock, check back later!")
                         
                         except Exception as e: print("Could not locate the Add-to-cart button \n" + str(e))
@@ -158,22 +139,23 @@ try:
                                 stateForm = shippingForm.find_element_by_id("consolidatedAddresses.ui_address_2.state")
                                 stateBtn = stateForm.find_element_by_css_selector("option[value="+state+"]") 
                                 stateBtn.click()
-                                # stateBtn.send_keys(Keys.RETURN)
 
+                                # Ensure the continue to payment button is enabled and present before clicking it
                                 try:
                                     paymentContinueField = WebDriverWait(driver, 10).until(
                                     EC.presence_of_element_located((By.CSS_SELECTOR, "div[class='button--continue']"))
                                 )
                                     paymentContinueBtn = paymentContinueField.find_element_by_xpath("*")
                                     paymentContinueBtn.click()
-                                    # driver.execute_script("arguments[0].click();", paymentContinueBtn)
 
+                                    # Wait for the place order button to appear at the place order page, then click it
                                     try: 
                                         placeOrderBtn = WebDriverWait(driver, 10).until(
                                         EC.presence_of_element_located((By.XPATH, "//button[contains(@data-track,'Place your Order - Contact Card')]"))
                                     )
                                         placeOrderBtn.click()
 
+                                        # Wait for the confirmation page to load and the print a confirmation message tot he console
                                         try: 
                                             orderSuccessMsg = WebDriverWait(driver, 10).until(
                                             EC.presence_of_element_located((By.CLASS_NAME, "//span[@text, 'Thanks for shopping with us!']"))
@@ -207,4 +189,4 @@ except Exception as e: print("an exception occured trying to access the advertis
 
 time.sleep(20)
 
-# driver.quit()
+driver.quit()

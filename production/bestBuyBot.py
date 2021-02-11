@@ -172,7 +172,15 @@ try:
                                         placeOrderBtn = WebDriverWait(driver, 10).until(
                                         EC.presence_of_element_located((By.XPATH, "//button[contains(@data-track,'Place your Order - Contact Card')]"))
                                     )
-                                        print(placeOrderBtn)
+                                        placeOrderBtn.click()
+
+                                        try: 
+                                            orderSuccessMsg = WebDriverWait(driver, 10).until(
+                                            EC.presence_of_element_located((By.CLASS_NAME, "//span[@text, 'Thanks for shopping with us!']"))
+                                        )           
+                                            print("Your Item was ordered successfully")
+
+                                        except Exception as e: print("Could not locate the order Success message \n" + str(e))
 
                                     except Exception as e: print("Could not locate the finalize purchase button \n" + str(e))
 
@@ -197,6 +205,6 @@ except Exception as e: print("an exception occured trying to access the advertis
 
 
 
-time.sleep(5)
+time.sleep(20)
 
 # driver.quit()

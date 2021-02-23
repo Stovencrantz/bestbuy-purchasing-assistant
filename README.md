@@ -1,1 +1,1 @@
-# gpu-purchasing-bot
+# bestbuy-purchasing-assistant

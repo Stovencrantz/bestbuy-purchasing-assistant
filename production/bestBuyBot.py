@@ -2,6 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support import expected_conditions as EC
 import time
 
@@ -20,7 +21,9 @@ zipCode = input("ZIP Code: ")
 
 # try/except to pass ad
 PATH = 'C:\webdrivers\chromedriver_win32\chromedriver.exe'
-driver = webdriver.Chrome(PATH)
+options = Options()
+options.page_load_strategy = 'eager'
+driver = webdriver.Chrome(PATH, options=options)
 driver.get('https://www.bestbuy.com/')
 
 # grabs the advertisement that pops up on initial page load,  and closes out of it
@@ -85,12 +88,12 @@ try:
                             )
                             # If the button is now enabled and the item can be checked out, we will break from this loop 
                             if (addToCartButton.is_enabled()): 
-                                print("Looks like the item is now in stock, We have added your item to the cart")
+                                print("Looks like the item is now in stock, We have added your item to the cart \n" + time.ctime())
                                 print(addToCartButton.is_enabled())
                                 break 
             
                             else:
-                                print("Looks like our Item is out of stock, check back later!")
+                                print("Looks like our Item is out of stock, check back later! \n"  + time.ctime())
                         
                         except Exception as e: print("Could not locate the Add-to-cart button \n" + str(e))
 
@@ -114,7 +117,7 @@ try:
 
                             checkoutBtn = driver.find_element_by_class_name("checkout-buttons__checkout").find_element_by_xpath("*")
                             checkoutBtn.click()
-                            print('Navigating to checkout page')
+                            print('Navigating to checkout page - ')
 
                             # Locate the shipping info form and fill in all of the field swith the users billing info that they entered
                             try:
